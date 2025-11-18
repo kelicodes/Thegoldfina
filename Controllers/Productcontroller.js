@@ -90,7 +90,7 @@ export const fetchproduct = async (req, res) => {
         .json({ success: false, message: "Invalid product ID format" });
     }
 
-    const theproduct = await product.findById(productid);
+    const theproduct = await product.findById(productId);
 
     if (!theproduct) {
       return res
