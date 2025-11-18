@@ -127,3 +127,42 @@ export const removeProduct = async (req, res) => {
 
 
 
+// ======= Fetch products by category =======
+export const fetchProductsByCategory = async (req, res) => {
+  try {
+    const { cat } = req.params;
+
+    if (!cat) {
+      return res.status(400).json({
+        success: false,
+        message: "Category is required",
+      });
+    }
+
+    // Find products matching the category (case-insensitive)
+    const products = await product.find({
+      category: { $regex: new RegExp(cat, "i") }
+    });
+
+    if (products.length === 0) {
+      return res.json({
+        success: true,
+        message: "No products found in this category",
+        products: [],
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Products fetched by category",
+      products,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Fetch by category failed",
+      error: error.message,
+    });
+  }
+};

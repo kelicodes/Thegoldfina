@@ -1,6 +1,6 @@
 import express from "express";
 import upload from "../Middleware/Multer.js"; // use cloudinary middleware
-import { fetchproduct, fetchproducts, productUpload, removeProduct } from "../Controllers/Productcontroller.js";
+import { fetchproduct, fetchproducts, productUpload, removeProduct,fetchProductsByCategory } from "../Controllers/Productcontroller.js";
 
 const productRouter = express.Router();
 
@@ -18,5 +18,6 @@ productRouter.post(
 productRouter.get("/fetch/:productId", fetchproduct)
 productRouter.get("/fetch", fetchproducts);
 productRouter.delete("/remove/:itemId", removeProduct);
+productRouter.get('/category/:cat',fetchProductsByCategory)
 
 export default productRouter;
