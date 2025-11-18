@@ -15,7 +15,7 @@ productRouter.post(
   productUpload
 );
 
-productRouter.get("/fetch/:productid", fetchproduct)
+productRouter.get("/fetch/:productId", fetchproduct)
 productRouter.get("/fetch", fetchproducts);
 productRouter.delete("/remove/:itemId", removeProduct);
 
