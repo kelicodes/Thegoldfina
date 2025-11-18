@@ -2,6 +2,7 @@
 
 import Order from "../Models/Order.js";
 import Cart from "../Models/Cartmodel.js";
+import product from "../Models/Productmodel.js";
 
 // ✅ CREATE ORDER FROM USER CART
 export const createOrder = async (req, res) => {
@@ -128,3 +129,22 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
+
+
+
+export const buyNow=async(req,res)=>{
+  try {
+      const userId = req.user._id;
+      const productId= req.body(productId)
+
+      if(!productId) return res.json({success:false, message:"product id required"})
+
+        const theproduct= await product.findById(productId)
+        return res.json({success:true, message:"product in",theproduct})
+
+  } catch (error) {
+    console.error(error)
+            return res.json({ success: false, message: "bu now failed" });
+
+  }
+}

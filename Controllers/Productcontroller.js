@@ -81,10 +81,10 @@ export const fetchproducts = async (req, res) => {
 // ======= Fetch single product by ID =======
 export const fetchproduct = async (req, res) => {
   try {
-    const { productid } = req.params;
+    const { productId } = req.params;
 
     // Validate product ID
-    if (!mongoose.Types.ObjectId.isValid(productid)) {
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid product ID format" });
@@ -124,3 +124,6 @@ export const removeProduct = async (req, res) => {
     return res.json({ success: false, message: "Remove product failed" });
   }
 };
+
+
+
