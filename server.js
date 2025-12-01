@@ -2,8 +2,6 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
-import Redis from "ioredis";
-
 
 // Import routers
 import userRouter from "./Routes/userRouter.js";
@@ -44,13 +42,6 @@ app.use(
 
 // ====== DATABASE ======
 DB();
-
-const redis = new Redis(process.env.REDIS_URL);
-
-// Test Redis
-redis.set("testKey", "Hello World");
-redis.get("testKey").then(value => console.log("Redis test:", value));
-
 
 // ====== ROUTES ======
 app.use("/user", userRouter);
