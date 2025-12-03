@@ -1,40 +1,32 @@
 import axios from "axios";
 import moment from "moment";
-import dotenv from "dotenv";
-dotenv.config();
 
 // ======================== PHONE FORMATTER ========================
 const formatPhone = (phone) => {
-  let p = phone.toString().trim();
-  p = p.replace(/\s+/g, ""); // remove spaces
-
-  if (p.startsWith("+254")) {
-    p = p.replace("+", "");
-  }
-
-  if (p.startsWith("0")) {
-    p = "254" + p.substring(1);
-  }
-
-  if (p.startsWith("7")) {
-    p = "254" + p;
-  }
-
+  let p = phone.toString().trim().replace(/\s+/g, "");
+  if (p.startsWith("+")) p = p.slice(1);
+  if (p.startsWith("0")) p = "254" + p.slice(1);
+  if (p.startsWith("7")) p = "254" + p;
   return p;
 };
 
+// ======================== SANDBOX CREDENTIALS =====================
+const SANDBOX_KEY = "bn7DuBPRDaqB3Gh7t4AXNEDemOMtY0YjYpfBBHuDprf2tTHz";
+const SANDBOX_SECRET = "rqmC5DDDPxBs8yMLokzA52A4NvrSacJyYDW9csilVFLusAlsZzVaUiNnW3otWHey";
+const SANDBOX_SHORTCODE = "174379";
+const SANDBOX_PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
+const SANDBOX_CALLBACK_URL="https://thegoldfina.onrender.com/pay/callback"
+const SANDBOX_ACCOUNT = "TestAccount001";
+
 // ======================== ACCESS TOKEN ===========================
 export const getAccessToken = async () => {
-  const consumerKey = process.env.MPESA_KEY;
-  const consumerSecret = process.env.MPESA_SECRET;
-  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
+  const auth = Buffer.from(`${SANDBOX_KEY}:${SANDBOX_SECRET}`).toString("base64");
 
   try {
     const res = await axios.get(
-      "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+      "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
       { headers: { Authorization: `Basic ${auth}` } }
     );
-
     return res.data.access_token;
   } catch (err) {
     console.error("Access Token Error:", err.response?.data || err.message);
@@ -42,7 +34,7 @@ export const getAccessToken = async () => {
   }
 };
 
-// ======================== STK PUSH (PAYBILL) =====================
+// ======================== STK PUSH (SANDBOX) =====================
 export const stkPush = async (req, res) => {
   try {
     const { phone, amount } = req.body;
@@ -52,38 +44,29 @@ export const stkPush = async (req, res) => {
     }
 
     const phoneFormatted = formatPhone(phone);
-
     const accessToken = await getAccessToken();
-    const paybill = process.env.MPESA_SHORTCODE;
-    const passkey = process.env.MPESA_PASSKEY;
-    const accountNumber = process.env.MPESA_ACCOUNT;
 
     const timestamp = moment().format("YYYYMMDDHHmmss");
-    const password = Buffer.from(paybill + passkey + timestamp).toString("base64");
+    const password = Buffer.from(SANDBOX_SHORTCODE + SANDBOX_PASSKEY + timestamp).toString("base64");
 
     const data = {
-      BusinessShortCode: paybill,
+      BusinessShortCode: SANDBOX_SHORTCODE,
       Password: password,
       Timestamp: timestamp,
       TransactionType: "CustomerPayBillOnline",
-      Amount: amount,
+      Amount: Number(amount),
       PartyA: phoneFormatted,
-      PartyB: paybill,
+      PartyB: SANDBOX_SHORTCODE,
       PhoneNumber: phoneFormatted,
-      CallBackURL: process.env.MPESA_CALLBACK_URL,
-      AccountReference: accountNumber,
+      CallBackURL: SANDBOX_CALLBACK_URL,
+      AccountReference: SANDBOX_ACCOUNT,
       TransactionDesc: "Online payment"
     };
 
     const response = await axios.post(
-      "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
       data,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        }
-      }
+      { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
     );
 
     return res.status(200).json({
@@ -94,7 +77,7 @@ export const stkPush = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("STK Error:", err.response?.data || err.message);
+    console.error("STK Push Error:", err.response?.data || err.message);
     return res.status(500).json({ success: false, error: err.response?.data || err.message });
   }
 };
@@ -103,49 +86,31 @@ export const stkPush = async (req, res) => {
 export const mpesaCallback = async (req, res) => {
   try {
     const callbackData = req.body;
-
-    console.log("========== M-PESA CALLBACK RECEIVED ==========");
-    console.log(JSON.stringify(callbackData, null, 2));
-
     const result = callbackData?.Body?.stkCallback;
+
     if (!result) return res.status(400).send("Invalid callback");
 
-    const {
-      MerchantRequestID,
-      CheckoutRequestID,
-      ResultCode,
-      ResultDesc,
-      CallbackMetadata
-    } = result;
+    const { ResultCode, ResultDesc, CallbackMetadata } = result;
 
     if (ResultCode !== 0) {
       console.log("❌ Payment Failed:", ResultDesc);
-
       return res.status(200).json({
-        message: "Callback received",
         status: "failed",
-        MerchantRequestID,
-        CheckoutRequestID,
-        ResultDesc
+        message: ResultDesc,
+        MerchantRequestID: result.MerchantRequestID,
+        CheckoutRequestID: result.CheckoutRequestID
       });
     }
 
-    let Amount, MpesaReceiptNumber, TransactionDate, PhoneNumber;
+    // Extract payment details
+    const items = CallbackMetadata?.Item || [];
+    const paymentResult = {};
+    items.forEach(i => paymentResult[i.Name] = i.Value);
 
-    if (CallbackMetadata && CallbackMetadata.Item) {
-      const items = CallbackMetadata.Item;
-      Amount = items.find(i => i.Name === "Amount")?.Value;
-      MpesaReceiptNumber = items.find(i => i.Name === "MpesaReceiptNumber")?.Value;
-      TransactionDate = items.find(i => i.Name === "TransactionDate")?.Value;
-      PhoneNumber = items.find(i => i.Name === "PhoneNumber")?.Value;
-    }
+    console.log("✅ Payment Success:", paymentResult);
 
-    console.log("✅ PAYMENT SUCCESS");
-    console.log({ Amount, MpesaReceiptNumber, PhoneNumber, TransactionDate });
-
-    // MUST SEND SUCCESS RESPONSE
+    // Respond to Safaricom
     res.status(200).json({ ResultCode: 0, ResultDesc: "Success" });
-
   } catch (err) {
     console.error("Callback Error:", err.message);
     res.status(500).send("Server Error");

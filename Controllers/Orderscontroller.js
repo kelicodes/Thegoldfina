@@ -94,6 +94,32 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+
+
+
+// Controller: Check M-Pesa payment status
+export const checkPaymentStatus = async (req, res) => {
+  const { checkoutRequestID } = req.params;
+
+  try {
+    // Find the order by checkoutRequestID
+    const order = await Order.findOne({ checkoutRequestID });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // Check if the order status is 'Completed'
+    const paid = order.status === "Completed";
+
+    res.json({ success: true, paid });
+  } catch (err) {
+    console.error("Check payment error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 // ✅ UPDATE ORDER STATUS (ADMIN ONLY)
 export const updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;
