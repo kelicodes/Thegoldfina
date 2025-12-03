@@ -9,6 +9,7 @@ import productRouter from "./Routes/productRoute.js";
 import Cartrouter from "./Routes/Cartroutes.js";
 import Orderrouter from "./Routes/OrderRoutes.js";
 import Pesarouter from "./Routes/Pesaroutes.js";
+import Paybillrouter from "./Routes/Paybill.js";
 
 // Import database
 import DB from "./Config/DB.js";
@@ -19,7 +20,8 @@ const PORT = process.env.PORT || 10000;
 // ====== MIDDLEWARES ======
 
 // Parse JSON bodies
-app.use(express.json());
+
+app.use(express.json({ limit: "10mb" }));  // VERY IMPORTANT
 
 // Parse URL-encoded bodies (for forms)
 app.use(express.urlencoded({ extended: true }));
@@ -49,6 +51,7 @@ app.use("/products", productRouter);
 app.use("/cart", Cartrouter);
 app.use("/orders", Orderrouter);
 app.use("/pesa", Pesarouter);
+app.use("/pay", Paybillrouter)
 
 // ====== HEALTH CHECK ======
 app.get("/", (req, res) => {
