@@ -13,7 +13,7 @@ const formatPhone = (phone) => {
 // ======================== SANDBOX CREDENTIALS =====================
 const SANDBOX_KEY = "bn7DuBPRDaqB3Gh7t4AXNEDemOMtY0YjYpfBBHuDprf2tTHz";
 const SANDBOX_SECRET = "rqmC5DDDPxBs8yMLokzA52A4NvrSacJyYDW9csilVFLusAlsZzVaUiNnW3otWHey";
-const SANDBOX_SHORTCODE = "174379";
+const SANDBOX_SHORTCODE = "542542";
 const SANDBOX_PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
 const SANDBOX_CALLBACK_URL="https://thegoldfina.onrender.com/pay/callback"
 const SANDBOX_ACCOUNT = "36321";
