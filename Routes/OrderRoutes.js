@@ -1,6 +1,6 @@
 import express from "express";
 import UserAuth from "../Middleware/userAuth.js";
-import Order from "../Models/OrderModel.js"; // ✅ Make sure this is imported
+import Order from "../Models/Order.js";
 import {
   createOrder,
   getUserOrders,
