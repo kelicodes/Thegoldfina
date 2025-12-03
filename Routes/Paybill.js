@@ -1,5 +1,5 @@
 import express from "express";
-import { stkPush, mpesaCallback } from "../Controllers/mpesaController.js";
+import { stkPush, mpesaCallback } from "../Controllers/Paybill/Paybill.js";
 
 const Paybillrouter = express.Router();
 
