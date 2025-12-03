@@ -1,5 +1,6 @@
 import express from "express";
-import  UserAuth from "../Middleware/userAuth.js"
+import UserAuth from "../Middleware/userAuth.js";
+import Order from "../Models/OrderModel.js"; // ✅ Make sure this is imported
 import {
   createOrder,
   getUserOrders,
@@ -7,33 +8,29 @@ import {
   updateOrderStatus,
   getAllOrders,
   checkPaymentStatus
-} from "../Controllers/Orderscontroller.js"
+} from "../Controllers/Orderscontroller.js";
 
 const OrderRouter = express.Router();
 
 OrderRouter.post("/create", UserAuth, createOrder);
 OrderRouter.get("/userorders", UserAuth, getUserOrders);
-OrderRouter.get('/all',UserAuth,getAllOrders)
+OrderRouter.get("/all", UserAuth, getAllOrders);
 OrderRouter.get("/:orderId", UserAuth, getOrderById);
-OrderRouter.put("/:orderId/status", UserAuth, updateOrderStatus); // Admin logic optional
+OrderRouter.put("/:orderId/status", UserAuth, updateOrderStatus);
+
 // Check payment status
 OrderRouter.get("/check-payment/:checkoutRequestID", UserAuth, checkPaymentStatus);
 
-
-// This will handle Safaricom callback after STK push
+// Safaricom callback
 OrderRouter.post("/mpesa/callback", async (req, res) => {
   try {
     const data = req.body;
-
-    // Extract necessary info
     const checkoutRequestID = data.Body.stkCallback.CheckoutRequestID;
     const resultCode = data.Body.stkCallback.ResultCode;
 
-    // Find the order
     const order = await Order.findOne({ checkoutRequestID });
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
-    // Update status if payment successful
     if (resultCode === 0) {
       order.status = "Completed";
       await order.save();
@@ -48,25 +45,30 @@ OrderRouter.post("/mpesa/callback", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-// PATCH /orders/update-checkout/:orderId
+
+// PATCH to save CheckoutRequestID
 OrderRouter.patch("/update-checkout/:orderId", UserAuth, async (req, res) => {
   try {
     const { orderId } = req.params;
     const { checkoutRequestID } = req.body;
 
+    if (!checkoutRequestID) {
+      return res.status(400).json({ success: false, message: "checkoutRequestID is required" });
+    }
+
     const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
 
     order.checkoutRequestID = checkoutRequestID;
     await order.save();
 
-    res.json({ success: true, message: "CheckoutRequestID saved." });
+    return res.status(200).json({ success: true, message: "CheckoutRequestID saved", order });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("PATCH /update-checkout error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
-
 
 export default OrderRouter;
