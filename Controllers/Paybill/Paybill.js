@@ -83,34 +83,41 @@ export const stkPush = async (req, res) => {
 };
 
 // ======================== CALLBACK HANDLER =======================
+
 export const mpesaCallback = async (req, res) => {
   try {
-    const callbackData = req.body;
-    const result = callbackData?.Body?.stkCallback;
-
+    const result = req.body?.Body?.stkCallback;
     if (!result) return res.status(400).send("Invalid callback");
 
-    const { ResultCode, ResultDesc, CallbackMetadata } = result;
+    const { ResultCode, ResultDesc, CheckoutRequestID } = result;
 
+    // ===== PAYMENT FAILED =====
     if (ResultCode !== 0) {
+      await Order.findOneAndUpdate(
+        { checkoutRequestID: CheckoutRequestID },
+        { status: "Failed" }
+      );
+
       console.log("❌ Payment Failed:", ResultDesc);
-      return res.status(200).json({
-        status: "failed",
-        message: ResultDesc,
-        MerchantRequestID: result.MerchantRequestID,
-        CheckoutRequestID: result.CheckoutRequestID
-      });
+
+      return res.json({ status: "failed" });
     }
 
-    // Extract payment details
-    const items = CallbackMetadata?.Item || [];
-    const paymentResult = {};
-    items.forEach(i => paymentResult[i.Name] = i.Value);
+    // ===== PAYMENT SUCCESS =====
+    const order = await Order.findOne({ checkoutRequestID: CheckoutRequestID });
 
-    console.log("✅ Payment Success:", paymentResult);
+    if (!order) {
+      console.log("Order NOT FOUND for callback");
+      return res.status(404).json({ message: "Order not found" });
+    }
 
-    // Respond to Safaricom
-    res.status(200).json({ ResultCode: 0, ResultDesc: "Success" });
+    order.status = "Completed";
+    await order.save();
+
+    console.log(`🎉 Payment success. Order ${order._id} marked as Completed.`);
+
+    // Respond to Safaricom (MUST ALWAYS RETURN THIS)
+    res.json({ ResultCode: 0, ResultDesc: "Success" });
   } catch (err) {
     console.error("Callback Error:", err.message);
     res.status(500).send("Server Error");
