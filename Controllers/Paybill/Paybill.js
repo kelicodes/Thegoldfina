@@ -16,7 +16,7 @@ const SANDBOX_SECRET = "rqmC5DDDPxBs8yMLokzA52A4NvrSacJyYDW9csilVFLusAlsZzVaUiNn
 const SANDBOX_SHORTCODE = "174379";
 const SANDBOX_PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
 const SANDBOX_CALLBACK_URL="https://thegoldfina.onrender.com/pay/callback"
-const SANDBOX_ACCOUNT = "TestAccount001";
+const SANDBOX_ACCOUNT = "36321";
 
 // ======================== ACCESS TOKEN ===========================
 export const getAccessToken = async () => {
