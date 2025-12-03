@@ -12,14 +12,14 @@ import {
 
 const OrderRouter = express.Router();
 
+
+OrderRouter.get("/check-payment/:checkoutRequestID", UserAuth, checkPaymentStatus);
+
 OrderRouter.post("/create", UserAuth, createOrder);
 OrderRouter.get("/userorders", UserAuth, getUserOrders);
 OrderRouter.get("/all", UserAuth, getAllOrders);
 OrderRouter.get("/:orderId", UserAuth, getOrderById);
 OrderRouter.put("/:orderId/status", UserAuth, updateOrderStatus);
-
-// Check payment status
-OrderRouter.get("/check-payment/:checkoutRequestID", UserAuth, checkPaymentStatus);
 
 // Safaricom callback
 OrderRouter.post("/mpesa/callback", async (req, res) => {
