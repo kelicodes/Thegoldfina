@@ -1,6 +1,7 @@
+// controllers/Avatarcontroller.js
 import Avatar from "../Models/Avatar.js";
-import cloudinary from "cloudinary";
 import fs from "fs";
+import cloudinary from "cloudinary";
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -9,27 +10,25 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ======== UPLOAD AVATAR ========
+// ======== Upload Avatar ========
 export const uploadAvatar = async (req, res) => {
   try {
     const { height, weight, bodyShape } = req.body;
 
-    if (!req.files || !req.files.avatar) {
+    if (!req.file) {
       return res.status(400).json({ success: false, message: "No avatar uploaded" });
     }
 
-    const file = req.files.avatar; // assuming single file
-
-    // --- Upload to Cloudinary ---
-    const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+    // Upload to Cloudinary
+    const result = await cloudinary.v2.uploader.upload(req.file.path, {
       folder: "wardrobe_avatars",
       transformation: [{ width: 500, height: 1500, crop: "limit" }],
     });
 
-    // Delete temp file
-    fs.unlinkSync(file.tempFilePath);
+    // Remove temp file from server
+    fs.unlinkSync(req.file.path);
 
-    // --- Save avatar in DB ---
+    // Save avatar in DB
     const newAvatar = new Avatar({
       user: req.user._id,
       imageUrl: result.secure_url,
@@ -51,7 +50,7 @@ export const uploadAvatar = async (req, res) => {
   }
 };
 
-// ======== GET USER AVATAR ========
+// ======== Get User Avatar ========
 export const getAvatar = async (req, res) => {
   try {
     const avatar = await Avatar.findOne({ user: req.user._id });
