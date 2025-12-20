@@ -56,10 +56,10 @@ console.log("REQ BODY:", req.body);
       { new: true, upsert: true }
     );
 
-    
+
 
     // Background task (non-blocking)
-    generateAnimeAvatar(avatar._id, uploadResult.secure_url);
+    await generateAnimeAvatar(avatar._id, uploadResult.secure_url);
 
     return res.status(201).json({
       success: true,
