@@ -56,8 +56,7 @@ console.log("REQ BODY:", req.body);
       { new: true, upsert: true }
     );
 
-    // ✅ Delete local file ONCE
-    fs.unlinkSync(req.file.path);
+    
 
     // Background task (non-blocking)
     generateAnimeAvatar(avatar._id, uploadResult.secure_url);
