@@ -54,7 +54,7 @@ app.use("/cart", Cartrouter);
 app.use("/orders", Orderrouter);
 app.use("/pesa", Pesarouter);
 app.use("/pay", Paybillrouter)
-app.use("/avatar", Avatar)
+app.use("/avatar", avatarRouter)
 // ====== HEALTH CHECK ======
 app.get("/", (req, res) => {
   res.send("API is running...");

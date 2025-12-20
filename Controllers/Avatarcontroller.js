@@ -12,6 +12,10 @@ cloudinary.v2.config({
 // Upload avatar details and original image only
 export const uploadAvatar = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No image uploaded" });
+    }
+
     const {
       height,
       weight,
@@ -23,53 +27,48 @@ export const uploadAvatar = async (req, res) => {
       bodyType,
     } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "No image uploaded" });
-    }
-
-    // Upload original image to Cloudinary
-    const originalResult = await cloudinary.v2.uploader.upload(req.file.path, {
+    // Upload to Cloudinary
+    const uploadResult = await cloudinary.v2.uploader.upload(req.file.path, {
       folder: "wardrobe_original",
     });
 
-    // Save profile data to DB without anime version yet
-    const newAvatar = new Avatar({
-      user: req.user._id,
-      originalImage: originalResult.secure_url,
-      imageUrl: "", // Anime version will be generated later
-      height,
-      weight,
-      clothingSize,
-      shoeSize,
-      favoriteColor,
-      stylePreference,
-      budgetRange,
-      bodyType,
-    });
+    // ✅ UPSERT: create if not exists, update if exists
+    const avatar = await Avatar.findOneAndUpdate(
+      { user: req.user._id },
+      {
+        user: req.user._id,
+        originalImage: uploadResult.secure_url,
+        imageUrl: "",
+        height,
+        weight,
+        clothingSize,
+        shoeSize,
+        favoriteColor,
+        stylePreference,
+        budgetRange,
+        bodyType,
+      },
+      { new: true, upsert: true }
+    );
 
-    await newAvatar.save();
-
-    // Remove local file
+    // ✅ Delete local file ONCE
     fs.unlinkSync(req.file.path);
 
-    res.status(201).json({
+    // Background task (non-blocking)
+    generateAnimeAvatar(avatar._id, uploadResult.secure_url);
+
+    return res.status(201).json({
       success: true,
-      message: "Profile saved! Animated avatar will be created in ~5 mins",
-      avatar: newAvatar,
+      message: "Profile saved successfully",
+      avatar,
     });
 
-    // Optional: trigger async avatar generation (e.g., queue or background worker)
-    // generateAnimeAvatar(newAvatar._id, originalResult.secure_url);
-
-    generateAnimeAvatar(newAvatar._id, originalResult.secure_url);
-
-        fs.unlinkSync(req.file.path);
-
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Avatar upload failed" });
+    console.error("UPLOAD ERROR:", error);
+    return res.status(500).json({ success: false, message: "Avatar upload failed" });
   }
 };
+
 
 // ======== Get User Avatar ========
 export const getAvatar = async (req, res) => {

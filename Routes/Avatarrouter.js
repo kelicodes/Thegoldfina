@@ -3,12 +3,13 @@ import upload from "../Middleware/Multer.js"; // Multer middleware for file uplo
 import { uploadAvatar, getAvatar } from "../Controllers/Avatarcontroller.js";
 import UserAuth from "../Middleware/userAuth.js";
 
-const router = express.Router();
+const avatarRouter = express.Router();
 
 // Upload avatar (single file field: "avatar")
-router.post("/upload", UserAuth, upload.single("avatar"), uploadAvatar);
+avatarRouter.post("/upload", UserAuth, upload.single("file"), uploadAvatar);
+
 
 // Get current user's avatar
-router.get("/", UserAuth, getAvatar);
+avatarRouter.get("/", UserAuth, getAvatar);
 
-export default router;
+export default avatarRouter;
