@@ -12,7 +12,6 @@ import {
 
 const OrderRouter = express.Router();
 
-
 OrderRouter.get("/check-payment/:checkoutRequestID", UserAuth, checkPaymentStatus);
 
 OrderRouter.post("/create", UserAuth, createOrder);

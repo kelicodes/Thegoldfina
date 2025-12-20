@@ -1,27 +1,43 @@
 import JWT from "jsonwebtoken";
 
-export const UserAuth = async (req, res, next) => {
+export const UserAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  // 1️⃣ No Authorization header at all
+  if (!authHeader) {
+    return res.status(401).json({
+      success: false,
+      message: "Login required"
+    });
+  }
+
+  // 2️⃣ Wrong format
+  if (!authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid auth format"
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  // 3️⃣ Token is literally "null" or empty
+  if (!token || token === "null") {
+    return res.status(401).json({
+      success: false,
+      message: "Login required"
+    });
+  }
+
   try {
-    // Read token from headers
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ success: false, message: "No token provided" });
-    }
-
-    const token = authHeader.split(" ")[1]; // Get the token part
     const decoded = JWT.verify(token, process.env.SECRETWORD);
-
-    if (decoded.id) {
-      req.user = { _id: decoded.id };
-      return next();
-    }
-
-    return res.status(401).json({ success: false, message: "Invalid token" });
-
-  } catch (e) {
-    console.log(e);
-    return res.status(401).json({ success: false, message: "Error in userAuth middleware" });
+    req.user = { _id: decoded.id };
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
+    });
   }
 };
 
