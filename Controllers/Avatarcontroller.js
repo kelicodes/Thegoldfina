@@ -6,9 +6,9 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDNAME,
+  api_key: process.env.CLOUDKEY,
+  api_secret: process.env.CLOUDSECRET,
 });
 
 // Upload avatar details and original image only
