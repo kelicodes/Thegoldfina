@@ -17,6 +17,9 @@ export const uploadAvatar = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No image uploaded" });
     }
+    console.log("REQ FILE:", req.file);
+console.log("REQ BODY:", req.body);
+
 
     const {
       height,
