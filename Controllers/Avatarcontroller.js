@@ -1,4 +1,4 @@
-
+import { generateAnimeAvatar } from "../Middleware/Anime.js";
 import Avatar from "../Models/Avatar.js";
 import cloudinary from "cloudinary";
 import fs from "fs";
@@ -60,6 +60,10 @@ export const uploadAvatar = async (req, res) => {
 
     // Optional: trigger async avatar generation (e.g., queue or background worker)
     // generateAnimeAvatar(newAvatar._id, originalResult.secure_url);
+
+    generateAnimeAvatar(newAvatar._id, originalResult.secure_url);
+
+        fs.unlinkSync(req.file.path);
 
   } catch (error) {
     console.error(error);
