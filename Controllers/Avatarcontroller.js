@@ -30,7 +30,7 @@ export const uploadAvatar = async (req, res) => {
     } = req.body;
 
     // Upload to Cloudinary
-    const uploadResult = await cloudinary.v2.uploader.upload(req.file.path, {
+    const uploadResult = await cloudinary.uploader.upload(req.file.path, {
       folder: "wardrobe_original",
     });
 
