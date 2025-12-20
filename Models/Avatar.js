@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const AvatarSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  imageUrl: { type: String, required: true },        // Anime/Ghibli avatar URL
-  originalImage: { type: String },                   // Original uploaded image URL
+  imageUrl: { type: String,  },        // Anime/Ghibli avatar URL
+  originalImage: { type: String,required: true },                   // Original uploaded image URL
   height: { type: Number },                          // optional
   weight: { type: Number },                          // optional
   bodyShape: { type: String },                       // optional, e.g., 'apple', 'pear'

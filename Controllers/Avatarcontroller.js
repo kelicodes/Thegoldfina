@@ -1,19 +1,15 @@
-// controllers/Avatarcontroller.js
-import Avatar from "../Models/Avatar.js";
-import fs from "fs";
-import cloudinary from "cloudinary";
-import axios from "axios";
-import FormData from "form-data";
 
-// Configure Cloudinary
+import Avatar from "../Models/Avatar.js";
+import cloudinary from "cloudinary";
+import fs from "fs";
+
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
-// ======== Upload Avatar ========
+// Upload avatar details and original image only
 export const uploadAvatar = async (req, res) => {
   try {
     const {
@@ -36,27 +32,11 @@ export const uploadAvatar = async (req, res) => {
       folder: "wardrobe_original",
     });
 
-    // Call DeepAI AnimeGAN API to generate anime avatar
-    const formData = new FormData();
-    formData.append("image", fs.createReadStream(req.file.path));
-
-    const animeRes = await axios.post("https://api.deepai.org/api/animegan", formData, {
-      headers: {
-        "Api-Key": process.env.DEEP_AI_KEY, // your DeepAI key
-        ...formData.getHeaders(),
-      },
-    });
-
-    const animeUrl = animeRes.data.output_url;
-
-    // Remove local temp file
-    fs.unlinkSync(req.file.path);
-
-    // Save to DB
+    // Save profile data to DB without anime version yet
     const newAvatar = new Avatar({
       user: req.user._id,
-      imageUrl: animeUrl,
       originalImage: originalResult.secure_url,
+      imageUrl: "", // Anime version will be generated later
       height,
       weight,
       clothingSize,
@@ -69,13 +49,23 @@ export const uploadAvatar = async (req, res) => {
 
     await newAvatar.save();
 
-    res.status(201).json({ success: true, message: "Profile saved!", avatar: newAvatar });
+    // Remove local file
+    fs.unlinkSync(req.file.path);
+
+    res.status(201).json({
+      success: true,
+      message: "Profile saved! Animated avatar will be created in ~5 mins",
+      avatar: newAvatar,
+    });
+
+    // Optional: trigger async avatar generation (e.g., queue or background worker)
+    // generateAnimeAvatar(newAvatar._id, originalResult.secure_url);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Avatar upload failed" });
   }
 };
-
 
 // ======== Get User Avatar ========
 export const getAvatar = async (req, res) => {
