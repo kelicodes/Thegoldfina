@@ -1,25 +1,26 @@
 import cloudinary from "cloudinary";
 import Avatar from "../Models/Avatar.js";
 
-
 export const generateAnimeAvatar = async (avatarId, originalImageUrl) => {
   try {
-    // Anime-style transformation (cartoon / illustration look)
-    const animeUrl = cloudinary.v2.url(originalImageUrl, {
+    // 1️⃣ Upload original image again to apply AI background removal
+    const uploadResult = await cloudinary.v2.uploader.upload(originalImageUrl, {
+      folder: "wardrobe_anime",
       transformation: [
-        { effect: "cartoonify:80" },
+        { effect: "remove_background" } // old-style (lower quality)
+        { effect: "cartoonify:80" },       // anime/cartoon look
         { effect: "outline:100" },
         { quality: "auto" },
-        { fetch_format: "auto" }
+        { fetch_format: "auto" },
       ],
     });
 
-    // Save anime avatar URL
+    // 2️⃣ Save anime avatar URL
     await Avatar.findByIdAndUpdate(avatarId, {
-      imageUrl: animeUrl,
+      imageUrl: uploadResult.secure_url,
     });
 
-    console.log("✅ Anime avatar generated");
+    console.log("✅ Anime avatar with background removed generated");
 
   } catch (error) {
     console.error("❌ Anime generation failed:", error);
