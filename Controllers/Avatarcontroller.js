@@ -2,6 +2,8 @@
 import Avatar from "../Models/Avatar.js";
 import fs from "fs";
 import cloudinary from "cloudinary";
+import axios from "axios";
+import FormData from "form-data";
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -10,45 +12,70 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
 // ======== Upload Avatar ========
 export const uploadAvatar = async (req, res) => {
   try {
-    const { height, weight, bodyShape } = req.body;
-
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "No avatar uploaded" });
-    }
-
-    // Upload to Cloudinary
-    const result = await cloudinary.v2.uploader.upload(req.file.path, {
-      folder: "wardrobe_avatars",
-      transformation: [{ width: 500, height: 1500, crop: "limit" }],
-    });
-
-    // Remove temp file from server
-    fs.unlinkSync(req.file.path);
-
-    // Save avatar in DB
-    const newAvatar = new Avatar({
-      user: req.user._id,
-      imageUrl: result.secure_url,
+    const {
       height,
       weight,
-      bodyShape,
+      clothingSize,
+      shoeSize,
+      favoriteColor,
+      stylePreference,
+      budgetRange,
+      bodyType,
+    } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No image uploaded" });
+    }
+
+    // Upload original image to Cloudinary
+    const originalResult = await cloudinary.v2.uploader.upload(req.file.path, {
+      folder: "wardrobe_original",
+    });
+
+    // Call DeepAI AnimeGAN API to generate anime avatar
+    const formData = new FormData();
+    formData.append("image", fs.createReadStream(req.file.path));
+
+    const animeRes = await axios.post("https://api.deepai.org/api/animegan", formData, {
+      headers: {
+        "Api-Key": process.env.DEEP_AI_KEY, // your DeepAI key
+        ...formData.getHeaders(),
+      },
+    });
+
+    const animeUrl = animeRes.data.output_url;
+
+    // Remove local temp file
+    fs.unlinkSync(req.file.path);
+
+    // Save to DB
+    const newAvatar = new Avatar({
+      user: req.user._id,
+      imageUrl: animeUrl,
+      originalImage: originalResult.secure_url,
+      height,
+      weight,
+      clothingSize,
+      shoeSize,
+      favoriteColor,
+      stylePreference,
+      budgetRange,
+      bodyType,
     });
 
     await newAvatar.save();
 
-    return res.status(201).json({
-      success: true,
-      message: "Avatar uploaded successfully",
-      avatar: newAvatar,
-    });
+    res.status(201).json({ success: true, message: "Profile saved!", avatar: newAvatar });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ success: false, message: "Avatar upload failed" });
+    res.status(500).json({ success: false, message: "Avatar upload failed" });
   }
 };
+
 
 // ======== Get User Avatar ========
 export const getAvatar = async (req, res) => {
