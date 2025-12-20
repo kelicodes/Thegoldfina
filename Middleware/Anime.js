@@ -7,7 +7,7 @@ export const generateAnimeAvatar = async (avatarId, originalImageUrl) => {
     const uploadResult = await cloudinary.v2.uploader.upload(originalImageUrl, {
       folder: "wardrobe_anime",
       transformation: [
-        { effect: "remove_background" } // old-style (lower quality)
+        { effect: "remove_background" }, // old-style (lower quality)
         { effect: "cartoonify:80" },       // anime/cartoon look
         { effect: "outline:100" },
         { quality: "auto" },
