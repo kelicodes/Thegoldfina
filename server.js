@@ -10,9 +10,11 @@ import Cartrouter from "./Routes/Cartroutes.js";
 import Orderrouter from "./Routes/OrderRoutes.js";
 import Pesarouter from "./Routes/Pesaroutes.js";
 import Paybillrouter from "./Routes/Paybill.js";
+import avatarRouter from "./Routes/Avatarrouter.js";
 
 // Import database
 import DB from "./Config/DB.js";
+import Avatar from "./Models/Avatar.js";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -52,7 +54,7 @@ app.use("/cart", Cartrouter);
 app.use("/orders", Orderrouter);
 app.use("/pesa", Pesarouter);
 app.use("/pay", Paybillrouter)
-
+app.use("/avatar", Avatar)
 // ====== HEALTH CHECK ======
 app.get("/", (req, res) => {
   res.send("API is running...");
