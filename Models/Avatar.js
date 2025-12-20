@@ -19,4 +19,6 @@ const AvatarSchema = new mongoose.Schema({
 });
 
 
-export default mongoose.model("Avatar", AvatarSchema);
+
+const Avatar= mongoose.models.Avatar || mongoose.model("Avatar",AvatarSchema)
+export default Avatar
