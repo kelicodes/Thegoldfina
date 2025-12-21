@@ -1,3 +1,4 @@
+import { all } from "axios";
 import { generateAnimeAvatar } from "../Middleware/Anime.js";
 import Avatar from "../Models/Avatar.js";
 import { v2 as cloudinary } from "cloudinary";
@@ -89,3 +90,15 @@ export const getAvatar = async (req, res) => {
     return res.status(500).json({ success: false, message: "Failed to fetch avatar" });
   }
 };
+
+
+
+export const fetchAllAvatars=async(req,res)=>{
+  try{
+    const allAvatars= await Avatar.find()
+    return res.json({message:"all avatars fetched", allAvatars})
+  }catch(e){
+    console.error(e)
+    return res.status(500).json({success:false, message:"faoled to fecth all AVATSRA"})
+  }
+}
