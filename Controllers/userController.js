@@ -75,7 +75,7 @@ export const logout = async (req, res) => {
 };
 
 
-export const fetchMe = async (req, res) => {
+export const fecthme = async (req, res) => {
   try {
     const userId = req.user._id; // middleware attaches _id
     if (!userId) {
