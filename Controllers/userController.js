@@ -82,7 +82,7 @@ export const fecthme = async (req, res) => {
       return res.status(401).json({ success: false, message: "User not authenticated" });
     }
 
-    const me = await User.findById(userId).select("-password"); // exclude password
+    const me = await user.findById(userId).select("-password"); // exclude password
     if (!me) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
