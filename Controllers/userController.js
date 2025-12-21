@@ -73,3 +73,15 @@ export const logout = async (req, res) => {
     return res.json({ success: false, message: e.message });
   }
 };
+
+
+export const fecthme= async (req,res)=>{
+  try{
+    const userId= req.user._id
+    const me= await user.findById(userId)
+    return res.json({success:true,me})
+  }catch(e){
+    console.log(e,"error in gecth me conroller")
+    return res.json({success:false,message: e.message})
+  }
+}
