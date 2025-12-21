@@ -10,7 +10,7 @@ const avatarRouter = express.Router();
 avatarRouter.post("/upload", UserAuth, upload.single("file"), uploadAvatar);
 
 // Post anime version (avatar ID sent in body)
-avatarRouter.post("/post-anime", UserAuth, upload.single("animeImage"), postAnimeAvatar);
+avatarRouter.post("/post-anime",  upload.single("animeImage"), postAnimeAvatar);
 
 // Get current user's avatar
 avatarRouter.get("/", UserAuth, getAvatar);
