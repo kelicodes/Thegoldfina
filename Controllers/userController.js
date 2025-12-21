@@ -75,13 +75,21 @@ export const logout = async (req, res) => {
 };
 
 
-export const fecthme= async (req,res)=>{
-  try{
-    const userId= req.user._id
-    const me= await user.findById(userId)
-    return res.json({success:true,me})
-  }catch(e){
-    console.log(e,"error in gecth me conroller")
-    return res.json({success:false,message: e.message})
+export const fetchMe = async (req, res) => {
+  try {
+    const userId = req.user._id; // middleware attaches _id
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "User not authenticated" });
+    }
+
+    const me = await User.findById(userId).select("-password"); // exclude password
+    if (!me) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({ success: true, me });
+  } catch (error) {
+    console.error(error, "Error in fetchMe controller");
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
