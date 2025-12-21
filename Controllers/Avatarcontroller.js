@@ -98,6 +98,7 @@ export const fetchAllAvatars = async (req, res) => {
 // ===== Post Anime Version =====
 export const postAnimeAvatar = async (req, res) => {
   try {
+    console.log(req.body)
     const {avatarId} = req.body;
 
     if (!req.file) {
@@ -112,9 +113,11 @@ export const postAnimeAvatar = async (req, res) => {
     // Update avatar document
     const updatedAvatar = await Avatar.findByIdAndUpdate(
       avatarId,
-      { animeUrl: uploadResult.secure_url },
+      { imageUrl: uploadResult.secure_url },
       { new: true }
     );
+
+    console.log(updatedAvatar)
 
     return res.status(200).json({
       success: true,
