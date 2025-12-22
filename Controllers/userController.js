@@ -152,16 +152,14 @@ export const forgotPassword = async (req, res) => {
       },
     });
 
-    await transporter.sendMail({
+    // Send email and log status
+    transporter.sendMail({
       to: email,
       subject: "Password Reset Code",
-      html: `
-        <h3>Password Reset</h3>
-        <p>Your reset code is:</p>
-        <h2>${code}</h2>
-        <p>This code expires in 10 minutes.</p>
-      `,
-    });
+      html: `<h3>Password Reset</h3><h2>${code}</h2>`,
+    })
+    .then(() => console.log("Email sent"))
+    .catch((err) => console.error("Email error:", err));
 
     return res.json({
       success: true,
@@ -172,6 +170,7 @@ export const forgotPassword = async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 };
+
 
 /* ================= VERIFY RESET CODE ================= */
 export const verifyResetCode = async (req, res) => {
