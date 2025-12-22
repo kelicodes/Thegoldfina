@@ -13,6 +13,12 @@ const userModel=new mongoose.Schema({
 		type:String,
 		required:true,
 		unique:true
+	},
+	resetCode:{
+		type:String
+	},
+	codeDate:{
+		type:Date
 	}
 })
 
