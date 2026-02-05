@@ -113,7 +113,9 @@ export const forgotPassword = async (req, res) => {
     return res.json({ success: true, message: "Reset code sent to email" });
   } catch (err) {
     console.error("Postmark error:", err);
-    return res.json({ success: false, message: "Failed to send reset email" });
+    
+    res.status(500).json({ success: false, message: err.message, stack: err.stack });
+
   }
 };
 
@@ -133,7 +135,8 @@ export const verifyResetCode = async (req, res) => {
     return res.json({ success: true, resetToken });
   } catch (err) {
     console.error(err);
-    return res.json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message, stack: err.stack });
+
   }
 };
 
@@ -157,6 +160,7 @@ export const resetPassword = async (req, res) => {
     return res.json({ success: true, message: "Password reset successful" });
   } catch (err) {
     console.error(err);
-    return res.json({ success: false, message: "Invalid or expired token" });
+    res.status(500).json({ success: false, message: err.message, stack: err.stack });
+
   }
 };
